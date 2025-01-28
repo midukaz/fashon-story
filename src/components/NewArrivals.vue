@@ -17,7 +17,8 @@ const newProducts = computed(() => {
           v-for="product in newProducts"
           :key="product.id"
           :product="product"
-          class="transform hover:scale-105 transition-transform duration-300"
+          class="transform hover:scale-105 transition-transform duration-300 cursor-pointer"
+          @click="$emit('click-product', product)"
         />
       </div>
     </div>

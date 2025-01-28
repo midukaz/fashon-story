@@ -125,17 +125,19 @@ const getCartTotal = () => {
             <div class="hidden md:flex space-x-6">
               <router-link 
                 v-for="(item, index) in [
-                  { name: 'Feminino', path: '/feminino' },
-                  { name: 'Masculino', path: '/masculino' },
-                  { name: 'Acessórios', path: '/acessorios' },
-                  { name: 'Sale', path: '/sale' }
+                  { name: 'Feminino', path: '/feminino', icon: '👗' },
+                  { name: 'Masculino', path: '/masculino', icon: '👔' },
+                  { name: 'Infantil', path: '/infantil', icon: '🧸' },
+                  { name: 'Acessórios', path: '/acessorios', icon: '👜' },
+                  { name: 'Sale', path: '/sale', icon: '🏷️' }
                 ]"
                 :key="index"
                 :to="item.path"
-                class="text-gray-600 hover:text-black transition-colors duration-200"
-                :class="{ 'font-semibold text-black': route.path === item.path }"
+                class="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+                :class="{ 'bg-gray-100 font-semibold': route.path === item.path }"
               >
-                {{ item.name }}
+                <span>{{ item.icon }}</span>
+                <span>{{ item.name }}</span>
               </router-link>
             </div>
           </div>
@@ -160,39 +162,101 @@ const getCartTotal = () => {
       </nav>
     </header>
 
-
-
-    <HeroCarousel class="mb-8" />
-    
-    <NewArrivals class="mb-12" />
+    <!-- Hero Carousel em tela cheia -->
+    <div class="w-full mb-12">
+      <HeroCarousel class="w-full max-h-[600px] overflow-hidden" />
+    </div>
 
     <main class="max-w-7xl mx-auto px-6 py-8">
-      <!-- Filtros avançados -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <SearchBar @search="handleSearch" class="md:col-span-2" />
-        <CategoryFilter @filter="handleFilter" />
-        <div class="flex space-x-4">
-          <SizeFilter @change="size => selectedSize = size" />
-          <ColorFilter @change="color => selectedColor = color" />
+      <!-- Novidades -->
+      <div class="mb-12">
+        <NewArrivals @click-product="openQuickView" />
+      </div>
+
+      <!-- Seção de Filtros e Produtos -->
+      <div class="lg:grid lg:grid-cols-12 lg:gap-8">
+        <!-- Sidebar de Filtros -->
+        <aside class="lg:col-span-3 mb-6 lg:mb-0">
+          <div class="bg-white rounded-xl shadow-sm p-6 sticky top-4">
+            <h2 class="text-lg font-semibold mb-6">Filtros</h2>
+            
+            <!-- Busca -->
+            <div class="mb-6">
+              <SearchBar 
+                @search="handleSearch" 
+                class="w-full"
+              />
+            </div>
+
+            <!-- Categorias -->
+            <div class="mb-6">
+              <h3 class="text-sm font-medium text-gray-700 mb-3">Categoria</h3>
+              <div class="space-y-2">
+                <button
+                  v-for="category in [
+                    { name: 'Todos', icon: '🏷️' },
+                    { name: 'Feminino', icon: '👗' },
+                    { name: 'Masculino', icon: '👔' },
+                    { name: 'Infantil', icon: '🧸' },
+                    { name: 'Acessórios', icon: '👜' },
+                    { name: 'Sale', icon: '💫' }
+                  ]"
+                  :key="category.name"
+                  @click="selectedCategory = category.name"
+                  class="w-full flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-200"
+                  :class="selectedCategory === category.name ? 
+                    'bg-gray-100 text-gray-900 font-medium' : 
+                    'text-gray-600 hover:bg-gray-50'"
+                >
+                  <span>{{ category.icon }}</span>
+                  <span>{{ category.name }}</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Tamanhos -->
+            <div class="mb-6">
+              <h3 class="text-sm font-medium text-gray-700 mb-3">Tamanho</h3>
+              <SizeFilter 
+                @change="size => selectedSize = size"
+                class="w-full" 
+              />
+            </div>
+
+            <!-- Cores -->
+            <div class="mb-6">
+              <h3 class="text-sm font-medium text-gray-700 mb-3">Cor</h3>
+              <ColorFilter 
+                @change="color => selectedColor = color"
+                class="w-full" 
+              />
+            </div>
+          </div>
+        </aside>
+
+        <!-- Conteúdo Principal -->
+        <div class="lg:col-span-9">
+          <!-- Produtos em Destaque -->
+          <TrendingSection 
+            class="mb-12" 
+            @click-product="openQuickView"
+          />
+          
+          <!-- Grid de Produtos -->
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+            <ProductCard
+              v-for="product in filteredProducts"
+              :key="product.id"
+              :product="product"
+              class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer"
+              @click="openQuickView(product)"
+            />
+          </div>
+
+          <!-- Guia de Estilo -->
+          <StyleGuide class="mt-16" />
         </div>
       </div>
-
-      <!-- Seção de produtos em destaque -->
-      <TrendingSection class="mb-12" />
-      
-      <!-- Grid de produtos -->
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        <ProductCard
-          v-for="product in filteredProducts"
-          :key="product.id"
-          :product="product"
-          class="transform hover:scale-105 transition-transform duration-300"
-          @quick-view="openQuickView(product)"
-        />
-      </div>
-
-      <!-- Guia de estilo e looks -->
-      <StyleGuide class="mt-16" />
     </main>
 
     <footer class="bg-white mt-16 border-t border-gray-200">
@@ -234,55 +298,83 @@ const getCartTotal = () => {
     <!-- Modal de Quick View -->
     <div 
       v-if="showQuickView" 
-      class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center"
+      class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
       @click.self="closeQuickView"
     >
-      <div class="bg-white rounded-xl p-6 max-w-2xl w-full mx-4">
-        <div class="flex justify-between mb-4">
-          <h3 class="text-2xl font-bold">{{ selectedProduct?.name }}</h3>
-          <button @click="closeQuickView" class="text-gray-500 hover:text-black">
-            ✕
-          </button>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <img 
-            :src="selectedProduct?.image" 
-            :alt="selectedProduct?.name" 
-            class="w-full rounded-lg"
-          >
-          <div>
-            <p class="text-gray-600 mb-4">{{ selectedProduct?.description }}</p>
-            <p class="text-2xl font-bold mb-4">R$ {{ selectedProduct?.price.toFixed(2) }}</p>
-            <div class="mb-4">
-              <h4 class="font-medium mb-2">Cores disponíveis:</h4>
-              <div class="flex gap-2">
-                <div 
-                  v-for="color in selectedProduct?.colors" 
-                  :key="color"
-                  class="px-3 py-1 bg-gray-100 rounded-full text-sm"
-                >
-                  {{ color }}
+      <div class="bg-white rounded-xl max-w-4xl w-full mx-auto overflow-hidden">
+        <div class="relative">
+          <!-- Header do Modal -->
+          <div class="flex justify-between items-center p-6 border-b">
+            <h3 class="text-2xl font-bold">{{ selectedProduct?.name }}</h3>
+            <button 
+              @click="closeQuickView" 
+              class="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Conteúdo do Modal -->
+          <div class="grid grid-cols-1 md:grid-cols-2">
+            <!-- Imagem do Produto -->
+            <div class="relative aspect-square">
+              <img 
+                :src="selectedProduct?.image" 
+                :alt="selectedProduct?.name" 
+                class="w-full h-full object-cover"
+              />
+            </div>
+
+            <!-- Detalhes do Produto -->
+            <div class="p-6 space-y-6">
+              <div>
+                <p class="text-gray-600 mb-4">{{ selectedProduct?.description }}</p>
+                <p class="text-3xl font-bold text-gray-900">
+                  R$ {{ selectedProduct?.price.toFixed(2) }}
+                </p>
+              </div>
+
+              <!-- Cores -->
+              <div>
+                <h4 class="font-medium mb-3">Cores disponíveis</h4>
+                <div class="flex flex-wrap gap-2">
+                  <button 
+                    v-for="color in selectedProduct?.colors" 
+                    :key="color"
+                    class="px-4 py-2 border rounded-full text-sm hover:bg-gray-50 transition-colors"
+                  >
+                    {{ color }}
+                  </button>
                 </div>
               </div>
-            </div>
-            <div class="mb-6">
-              <h4 class="font-medium mb-2">Tamanhos disponíveis:</h4>
-              <div class="flex gap-2">
-                <button 
-                  v-for="size in selectedProduct?.sizes" 
-                  :key="size"
-                  class="px-3 py-1 border rounded-lg hover:bg-gray-100"
-                >
-                  {{ size }}
-                </button>
+
+              <!-- Tamanhos -->
+              <div>
+                <h4 class="font-medium mb-3">Tamanhos disponíveis</h4>
+                <div class="flex flex-wrap gap-2">
+                  <button 
+                    v-for="size in selectedProduct?.sizes" 
+                    :key="size"
+                    class="w-14 h-14 flex items-center justify-center border rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                  >
+                    {{ size }}
+                  </button>
+                </div>
               </div>
+
+              <!-- Botão Adicionar ao Carrinho -->
+              <button 
+                @click="addToCart(selectedProduct); closeQuickView()"
+                class="w-full bg-black text-white py-4 rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 font-medium"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+                Adicionar ao Carrinho
+              </button>
             </div>
-            <button 
-              @click="addToCart(selectedProduct); closeQuickView()"
-              class="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800"
-            >
-              Adicionar ao Carrinho
-            </button>
           </div>
         </div>
       </div>
