@@ -19,17 +19,18 @@
     {
       "id": "2",
       "name": "Blazer Elegante",
-      "price": 299.90,
-      "image": "https://images.unsplash.com/photo-1548624313-0396c75e4b63?w=500",
-      "description": "Blazer estruturado em tecido premium",
-      "category": "Feminino",
-      "colors": ["Preto", "Bege", "Marinho"],
-      "sizes": ["P", "M", "G", "GG"],
-      "isNew": false,
-      "trending": true,
+      "price": 289.90,
+      "image": "https://images.unsplash.com/photo-1592878904946-b3cd8ae243d0?w=500",
+      "description": "Blazer moderno com corte slim",
+      "category": "Masculino",
+      "colors": ["Preto", "Azul Marinho", "Cinza"],
+      "sizes": ["P", "M", "G"],
+      "isNew": true,
+      "trending": false,
       "onSale": false,
       "rating": 4.8,
-      "reviews": 45
+      "reviews": 42,
+      "discount": null
     },
     {
       "id": "3",
@@ -124,18 +125,19 @@
     },
     {
       "id": "9",
-      "name": "Tênis Infantil Casual",
-      "price": 119.90,
-      "image": "https://images.unsplash.com/photo-1514989940723-e8e51635b782?w=500",
-      "description": "Tênis confortável e resistente para crianças",
-      "category": "Infantil",
-      "colors": ["Azul", "Rosa", "Preto"],
-      "sizes": ["25", "26", "27", "28", "29", "30"],
+      "name": "Suéter de Tricô",
+      "price": 159.90,
+      "image": "https://images.unsplash.com/photo-1576871337632-b9aef4c17ab9?w=500",
+      "description": "Suéter em tricô macio e confortável",
+      "category": "Masculino",
+      "colors": ["Bege", "Cinza", "Verde Musgo"],
+      "sizes": ["P", "M", "G", "GG"],
       "isNew": false,
-      "trending": false,
-      "onSale": true,
-      "rating": 4.4,
-      "reviews": 31
+      "trending": true,
+      "onSale": false,
+      "rating": 4.6,
+      "reviews": 29,
+      "discount": null
     },
     {
       "id": "10",
@@ -213,22 +215,7 @@
       "reviews": 19
     },
     {
-      "id": "15",
-      "name": "Suéter de Tricô",
-      "price": 179.90,
-      "image": "https://images.unsplash.com/photo-1586337276000-c04decf73a08?w=500",
-      "description": "Suéter em tricô macio e confortável",
-      "category": "Masculino",
-      "colors": ["Cinza", "Azul Marinho", "Verde"],
-      "sizes": ["P", "M", "G", "GG"],
-      "isNew": false,
-      "trending": true,
-      "onSale": false,
-      "rating": 4.6,
-      "reviews": 33
-    },
-    {
-      "id": "16",
+      "id": "17",
       "name": "Bermuda Cargo",
       "price": 119.90,
       "image": "https://images.unsplash.com/photo-1565084888279-aca607ecce0c?w=500",
@@ -243,7 +230,7 @@
       "reviews": 27
     },
     {
-      "id": "17",
+      "id": "18",
       "name": "Vestido Infantil Festa",
       "price": 169.90,
       "image": "https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?w=500",
@@ -258,7 +245,7 @@
       "reviews": 15
     },
     {
-      "id": "18",
+      "id": "19",
       "name": "Pijama Infantil",
       "price": 79.90,
       "image": "https://images.unsplash.com/photo-1555009393-f20bdb245c4d?w=500",
@@ -273,25 +260,10 @@
       "reviews": 38
     },
     {
-      "id": "19",
-      "name": "Relógio Minimalista",
-      "price": 299.90,
-      "image": "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=500",
-      "description": "Relógio com design clean e pulseira em couro",
-      "category": "Acessórios",
-      "colors": ["Preto", "Marrom", "Rosé"],
-      "sizes": ["Único"],
-      "isNew": false,
-      "trending": true,
-      "onSale": false,
-      "rating": 4.8,
-      "reviews": 41
-    },
-    {
       "id": "20",
       "name": "Mochila Moderna",
       "price": 249.90,
-      "image": "https://images.unsplash.com/photo-1553062407-98eeb64c6a45?w=500",
+      "image": "https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?w=500",
       "description": "Mochila espaçosa com compartimento para notebook",
       "category": "Acessórios",
       "colors": ["Preto", "Cinza", "Azul"],
@@ -300,7 +272,8 @@
       "trending": false,
       "onSale": false,
       "rating": 4.7,
-      "reviews": 29
+      "reviews": 29,
+      "discount": null
     },
     {
       "id": "21",
