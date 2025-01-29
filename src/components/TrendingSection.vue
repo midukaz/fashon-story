@@ -18,9 +18,17 @@ interface Product {
   reviews: number;
 }
 
+const emit = defineEmits(['clickProduct']);
+
 const trendingProducts = computed(() => {
-  return productsData.products.filter((product: Product) => product.trending);
+  return productsData.products
+    .filter((product: Product) => product.trending)
+    .slice(0, 4); // Limita para mostrar apenas 4 produtos
 });
+
+const handleProductClick = (product: Product) => {
+  emit('clickProduct', product);
+};
 </script>
 
 <template>
@@ -31,7 +39,8 @@ const trendingProducts = computed(() => {
         <div 
           v-for="product in trendingProducts"
           :key="product.id"
-          class="group relative"
+          class="group relative cursor-pointer"
+          @click="handleProductClick(product)"
         >
           <div class="aspect-square overflow-hidden rounded-lg bg-gray-100">
             <img 

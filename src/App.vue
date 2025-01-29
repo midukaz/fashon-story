@@ -12,6 +12,7 @@ import NewArrivals from './components/NewArrivals.vue';
 import StyleGuide from './components/StyleGuide.vue';
 import { useRouter, useRoute } from 'vue-router';
 import Pagination from './components/Pagination.vue';
+import ProductModal from './components/ProductModal.vue';
 
 // Interfaces
 interface Product {
@@ -63,6 +64,7 @@ const selectedProduct = ref<Product | null>(null);
 const cartItems = ref<CartItem[]>([]);
 const currentSlide = ref(0);
 const itemsPerSlide = ref(4);
+const showModal = ref(false);
 
 // Configuração da paginação
 const itemsPerPage = ref(12);
@@ -184,6 +186,21 @@ const prevSlide = () => {
   if (currentSlide.value > 0) {
     currentSlide.value--;
   }
+};
+
+const handleProductClick = (product) => {
+  selectedProduct.value = product;
+  showModal.value = true;
+};
+
+const handleCloseModal = () => {
+  showModal.value = false;
+  selectedProduct.value = null;
+};
+
+const handleAddToCart = (product) => {
+  addToCart(product);
+  handleCloseModal();
 };
 </script>
 
@@ -350,29 +367,28 @@ const prevSlide = () => {
           <!-- Produtos em Destaque -->
           <TrendingSection 
             class="mb-12" 
-            @click-product="openQuickView"
+            @click-product="handleProductClick"
           />
           
           <!-- Grid de Produtos -->
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
-            <ProductCard
-              v-for="product in paginatedProducts"
-              :key="product.id"
-              :product="product"
-              class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer"
-              @click="openQuickView(product)"
+          <section id="products-section" class="container mx-auto px-4 py-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+              <ProductCard
+                v-for="product in paginatedProducts"
+                :key="product.id"
+                :product="product"
+                @click="handleProductClick(product)"
+              />
+            </div>
+            
+            <Pagination
+              v-model:currentPage="currentPage"
+              :totalPages="totalPages"
             />
-          </div>
+          </section>
 
           <!-- Guia de Estilo -->
           <StyleGuide class="mt-16" />
-
-          <!-- Paginação -->
-          <Pagination
-            :current-page="currentPage"
-            :total-pages="totalPages"
-            @page-change="handlePageChange"
-          />
         </div>
       </div>
     </main>
@@ -413,90 +429,12 @@ const prevSlide = () => {
       </div>
     </footer>
 
-    <!-- Modal de Quick View -->
-    <div 
-      v-if="showQuickView" 
-      class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
-      @click.self="closeQuickView"
-    >
-      <div class="bg-white rounded-xl max-w-4xl w-full mx-auto overflow-hidden">
-        <div class="relative">
-          <!-- Header do Modal -->
-          <div class="flex justify-between items-center p-6 border-b">
-            <h3 class="text-2xl font-bold">{{ selectedProduct?.name }}</h3>
-            <button 
-              @click="closeQuickView" 
-              class="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-
-          <!-- Conteúdo do Modal -->
-          <div class="grid grid-cols-1 md:grid-cols-2">
-            <!-- Imagem do Produto -->
-            <div class="relative aspect-square">
-              <img 
-                :src="selectedProduct?.image" 
-                :alt="selectedProduct?.name" 
-                class="w-full h-full object-cover"
-              />
-            </div>
-
-            <!-- Detalhes do Produto -->
-            <div class="p-6 space-y-6">
-              <div>
-                <p class="text-gray-600 mb-4">{{ selectedProduct?.description }}</p>
-                <p class="text-3xl font-bold text-gray-900">
-                  R$ {{ selectedProduct?.price.toFixed(2) }}
-                </p>
-              </div>
-
-              <!-- Cores -->
-              <div>
-                <h4 class="font-medium mb-3">Cores disponíveis</h4>
-                <div class="flex flex-wrap gap-2">
-                  <button 
-                    v-for="color in selectedProduct?.colors" 
-                    :key="color"
-                    class="px-4 py-2 border rounded-full text-sm hover:bg-gray-50 transition-colors"
-                  >
-                    {{ color }}
-                  </button>
-                </div>
-              </div>
-
-              <!-- Tamanhos -->
-              <div>
-                <h4 class="font-medium mb-3">Tamanhos disponíveis</h4>
-                <div class="flex flex-wrap gap-2">
-                  <button 
-                    v-for="size in selectedProduct?.sizes" 
-                    :key="size"
-                    class="w-14 h-14 flex items-center justify-center border rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
-                  >
-                    {{ size }}
-                  </button>
-                </div>
-              </div>
-
-              <!-- Botão Adicionar ao Carrinho -->
-              <button 
-                @click="addToCart(selectedProduct); closeQuickView()"
-                class="w-full bg-black text-white py-4 rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 font-medium"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
-                Adicionar ao Carrinho
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <ProductModal
+      :product="selectedProduct"
+      :show="showModal"
+      @close="handleCloseModal"
+      @add-to-cart="handleAddToCart"
+    />
 
     <!-- Carrinho -->
     <div 
