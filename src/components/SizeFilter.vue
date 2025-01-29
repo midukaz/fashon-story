@@ -1,28 +1,50 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import productsData from '../data/products.json';
 
-const sizes = ['PP', 'P', 'M', 'G', 'GG', 'XG'];
-const selectedSize = ref('Todos');
+interface Size {
+  roupas: string[];
+  calcados: string[];
+  infantil: string[];
+  acessorios: string[];
+}
+
+const props = defineProps<{
+  selectedSize?: string;
+}>();
 
 const emit = defineEmits(['change']);
 
-const handleSizeChange = (size: string) => {
-  selectedSize.value = size;
+const sizes = ref<Size>(productsData.sizes);
+
+const handleSizeSelect = (size: string) => {
   emit('change', size);
 };
+
+const allSizes = computed(() => {
+  return [
+    ...sizes.value.roupas,
+    ...sizes.value.calcados,
+    ...sizes.value.infantil,
+    ...sizes.value.acessorios
+  ];
+});
 </script>
 
 <template>
-  <div class="relative">
-    <select
-      v-model="selectedSize"
-      @change="handleSizeChange(selectedSize)"
-      class="w-full p-2 border rounded-lg bg-white appearance-none cursor-pointer"
+  <div class="flex flex-wrap gap-2">
+    <button
+      v-for="size in allSizes"
+      :key="size"
+      @click="handleSizeSelect(size)"
+      class="px-3 py-1 rounded border transition-all duration-200"
+      :class="[
+        selectedSize === size 
+          ? 'border-blue-500 bg-blue-50 text-blue-700' 
+          : 'border-gray-200 hover:border-gray-300'
+      ]"
     >
-      <option value="Todos">Tamanho</option>
-      <option v-for="size in sizes" :key="size" :value="size">
-        {{ size }}
-      </option>
-    </select>
+      {{ size }}
+    </button>
   </div>
 </template> 

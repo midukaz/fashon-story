@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { products } from './data/products';
+import productsData from './data/products.json';
 import ProductCard from './components/ProductCard.vue';
 import CategoryFilter from './components/CategoryFilter.vue';
 import HeroCarousel from './components/HeroCarousel.vue';
@@ -11,7 +11,47 @@ import TrendingSection from './components/TrendingSection.vue';
 import NewArrivals from './components/NewArrivals.vue';
 import StyleGuide from './components/StyleGuide.vue';
 import { useRouter, useRoute } from 'vue-router';
+import Pagination from './components/Pagination.vue';
 
+// Interfaces
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  image: string;
+  description: string;
+  category: string;
+  colors: string[];
+  sizes: string[];
+  isNew: boolean;
+  trending: boolean;
+  onSale: boolean;
+  rating: number;
+  reviews: number;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  image: string;
+}
+
+interface Color {
+  name: string;
+  value: string;
+}
+
+interface CartItem extends Product {
+  quantity: number;
+}
+
+// Dados principais com tipagem correta
+const allProducts = ref<Product[]>(productsData.products);
+const categories = ref<Category[]>(productsData.categories);
+const colors = ref<Color[]>(productsData.colors);
+const sizes = ref(productsData.sizes);
+
+// Estados
 const selectedCategory = ref('Todos');
 const selectedSize = ref('Todos');
 const selectedColor = ref('Todos');
@@ -19,14 +59,21 @@ const searchQuery = ref('');
 const priceRange = ref({ min: 0, max: 1000 });
 const showQuickView = ref(false);
 const showCart = ref(false);
-const selectedProduct = ref(null);
-const cartItems = ref([]);
+const selectedProduct = ref<Product | null>(null);
+const cartItems = ref<CartItem[]>([]);
+const currentSlide = ref(0);
+const itemsPerSlide = ref(4);
+
+// Configuração da paginação
+const itemsPerPage = ref(12);
+const currentPage = ref(1);
 
 const router = useRouter();
 const route = useRoute();
 
+// Computed properties
 const filteredProducts = computed(() => {
-  let filtered = products;
+  let filtered = allProducts.value;
   
   if (selectedCategory.value !== 'Todos') {
     filtered = filtered.filter(product => product.category === selectedCategory.value);
@@ -56,6 +103,20 @@ const filteredProducts = computed(() => {
   return filtered;
 });
 
+const totalPages = computed(() => Math.ceil(filteredProducts.value.length / itemsPerPage.value));
+
+const paginatedProducts = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value;
+  const end = start + itemsPerPage.value;
+  return filteredProducts.value.slice(start, end);
+});
+
+const newArrivals = computed(() => allProducts.value.filter(p => p.isNew));
+const trendingProducts = computed(() => allProducts.value.filter(p => p.trending));
+const onSaleProducts = computed(() => allProducts.value.filter(p => p.onSale));
+const maxSlides = computed(() => Math.ceil(newArrivals.value.length / itemsPerSlide.value));
+
+// Métodos
 const handleFilter = (category: string) => {
   selectedCategory.value = category;
 };
@@ -64,7 +125,22 @@ const handleSearch = (query: string) => {
   searchQuery.value = query;
 };
 
-const addToCart = (product) => {
+const handlePageChange = (page: number) => {
+  currentPage.value = page;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+const openQuickView = (product: Product) => {
+  selectedProduct.value = product;
+  showQuickView.value = true;
+};
+
+const closeQuickView = () => {
+  showQuickView.value = false;
+  selectedProduct.value = null;
+};
+
+const addToCart = (product: Product) => {
   const existingItem = cartItems.value.find(item => item.id === product.id);
   
   if (existingItem) {
@@ -76,24 +152,13 @@ const addToCart = (product) => {
     });
   }
   
-  // Mostra o carrinho brevemente
   showCart.value = true;
   setTimeout(() => {
     showCart.value = false;
   }, 3000);
 };
 
-const openQuickView = (product) => {
-  selectedProduct.value = product;
-  showQuickView.value = true;
-};
-
-const closeQuickView = () => {
-  showQuickView.value = false;
-  selectedProduct.value = null;
-};
-
-const updateQuantity = (item, change) => {
+const updateQuantity = (item: CartItem, change: number) => {
   const index = cartItems.value.findIndex(i => i.id === item.id);
   if (index > -1) {
     const newQuantity = item.quantity + change;
@@ -105,8 +170,20 @@ const updateQuantity = (item, change) => {
   }
 };
 
-const getCartTotal = () => {
+const getCartTotal = computed(() => {
   return cartItems.value.reduce((total, item) => total + (item.price * item.quantity), 0);
+});
+
+const nextSlide = () => {
+  if (currentSlide.value < maxSlides.value - 1) {
+    currentSlide.value++;
+  }
+};
+
+const prevSlide = () => {
+  if (currentSlide.value > 0) {
+    currentSlide.value--;
+  }
 };
 </script>
 
@@ -169,8 +246,42 @@ const getCartTotal = () => {
 
     <main class="max-w-7xl mx-auto px-6 py-8">
       <!-- Novidades -->
-      <div class="mb-12">
-        <NewArrivals @click-product="openQuickView" />
+      <div class="mb-12 relative">
+        <div class="overflow-hidden">
+          <div class="flex transition-transform duration-300 ease-in-out" :style="{ transform: `translateX(-${currentSlide * 100}%)` }">
+            <NewArrivals 
+              v-for="(_, index) in Math.ceil(newArrivals.length / itemsPerSlide)" 
+              :key="index"
+              :start-index="index * itemsPerSlide"
+              :items-per-slide="itemsPerSlide"
+              @click-product="openQuickView"
+              class="flex-shrink-0 w-full"
+            />
+          </div>
+        </div>
+        
+        <!-- Botões de navegação -->
+        <button 
+          @click="prevSlide" 
+          class="absolute left-0 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow-md hover:bg-white"
+          :class="{ 'invisible': currentSlide === 0 }"
+        >
+          <span class="sr-only">Anterior</span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        
+        <button 
+          @click="nextSlide" 
+          class="absolute right-0 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow-md hover:bg-white"
+          :class="{ 'invisible': currentSlide === maxSlides - 1 }"
+        >
+          <span class="sr-only">Próximo</span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
       </div>
 
       <!-- Seção de Filtros e Produtos -->
@@ -245,7 +356,7 @@ const getCartTotal = () => {
           <!-- Grid de Produtos -->
           <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
             <ProductCard
-              v-for="product in filteredProducts"
+              v-for="product in paginatedProducts"
               :key="product.id"
               :product="product"
               class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer"
@@ -255,6 +366,13 @@ const getCartTotal = () => {
 
           <!-- Guia de Estilo -->
           <StyleGuide class="mt-16" />
+
+          <!-- Paginação -->
+          <Pagination
+            :current-page="currentPage"
+            :total-pages="totalPages"
+            @page-change="handlePageChange"
+          />
         </div>
       </div>
     </main>

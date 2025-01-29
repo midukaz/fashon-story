@@ -1,12 +1,23 @@
 <script setup lang="ts">
-import { Product } from '../types';
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  image: string;
+  description: string;
+  category: string;
+  colors: string[];
+  sizes: string[];
+  isNew: boolean;
+  trending: boolean;
+  onSale: boolean;
+  rating: number;
+  reviews: number;
+}
 
-const props = defineProps({
-  product: {
-    type: Object,
-    required: true
-  }
-});
+const props = defineProps<{
+  product: Product;
+}>();
 
 const emit = defineEmits(['quick-view', 'add-to-cart']);
 
@@ -22,46 +33,27 @@ const handleAddToCart = (event: Event) => {
 </script>
 
 <template>
-  <div class="bg-white rounded-xl shadow-sm overflow-hidden group">
-    <div class="relative cursor-pointer" @click="handleQuickView">
-      <img 
-        :src="product.image" 
-        :alt="product.name" 
-        class="w-full h-80 object-cover transition-transform duration-300 group-hover:scale-105"
-      >
-      <div 
-        v-if="product.isNew" 
-        class="absolute top-2 left-2 bg-black text-white px-3 py-1 rounded-full text-sm"
-      >
-        Novo
-      </div>
-      <div 
-        v-if="product.trending" 
-        class="absolute top-2 left-2 bg-red-500 text-white px-3 py-1 rounded-full text-sm"
-      >
-        Trending
-      </div>
-    </div>
+  <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-duration-300">
+    <img :src="product.image" :alt="product.name" class="w-full h-64 object-cover rounded-t-lg">
     <div class="p-4">
-      <h3 class="text-lg font-semibold mb-1">{{ product.name }}</h3>
-      <p class="text-gray-600 text-sm mb-2">{{ product.description }}</p>
-      <div class="flex justify-between items-center">
-        <span class="text-xl font-bold">R$ {{ product.price.toFixed(2) }}</span>
-        <button 
-          @click="handleAddToCart"
-          class="bg-black text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 transition-colors"
-        >
-          Adicionar
-        </button>
+      <h3 class="text-lg font-semibold">{{ product.name }}</h3>
+      <p class="text-gray-600">{{ product.category }}</p>
+      <p class="text-lg font-bold mt-2">R$ {{ product.price.toFixed(2) }}</p>
+      <div class="flex items-center mt-2">
+        <span class="text-yellow-400">★</span>
+        <span class="ml-1">{{ product.rating }}</span>
+        <span class="text-gray-500 ml-2">({{ product.reviews }})</span>
       </div>
-      <div class="mt-3 flex gap-1">
-        <div 
-          v-for="color in product.colors" 
-          :key="color"
-          class="px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-600"
-        >
-          {{ color }}
-        </div>
+      <div class="mt-2">
+        <span v-if="product.isNew" class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full mr-2">
+          Novo
+        </span>
+        <span v-if="product.trending" class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mr-2">
+          Trending
+        </span>
+        <span v-if="product.onSale" class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+          Promoção
+        </span>
       </div>
     </div>
   </div>
